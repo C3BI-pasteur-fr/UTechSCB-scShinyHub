@@ -1,9 +1,9 @@
 #' this is used to run the app without installing it.
 #'
 
-localContributionDir = "~/Rstudio/shHubgit/Dummy/"
-defaultValueSingleGene = "CD52"
-defaultValueMultiGenes = "CD52, S100A4, S100A9, S100A8"
+localContributionDir = "~/Rstudio/scShinyHubContributionsBJ/"
+defaultValueSingleGene = "pecam1"
+defaultValueMultiGenes = "pecam1, cdh5, eng"
 defaultValueRegExGene = "" # tip: '^CD7$|^KIT$; genes with min expression
 DEBUG = TRUE
 DEBUGSAVE = FALSE

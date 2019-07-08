@@ -247,7 +247,7 @@ appendAnnotation = function(scEx, annFile) {
   
   for (fpIdx in 1:length(annFile$datapath)) {
     data <- psych::read.file.csv(file = annFile$datapath[fpIdx])
-    rownames(data) = make.names(rownames(data))
+    # rownames(data) = make.names(rownames(data))
     # feature data
     if (all(rownames(data) %in% rownames(rDat))) {
       # if any factor is already set we need to avoid having different levles
@@ -318,8 +318,8 @@ inputData <- reactive({
   }
   # load(file='~/SCHNAPPsDebug/inputData.RData')
   
-  # inFile$datapath = "data/scEx.csv"
-  # annFile$datapath = "data/scExCells.csv"
+  inFile$datapath = "~/GoogleDrive/pasteur/Puceat_Pasteur/AVC-mm.v2.Rds"
+  annFile$datapath = "~/GoogleDrive/pasteur/Puceat_Pasteur/may7/scorpiusTraj.2019-05-07.csv"
   fpExtension = tools::file_ext(inFile$datapath[1])
   if (fpExtension %in% c("RData", "Rds")) {
     retVal <- inputDataFunc(inFile)
@@ -1379,6 +1379,7 @@ projections <- reactive({
   # add a column for gene specific information that will be filled/updated on demand
   projections$UmiCountPerGenes <- 0
   projections$UmiCountPerGenes2 <- 0
+  projections$Index = 1:nrow(projections)
   for (pdIdx in colnames(pd)) {
     if (!pdIdx %in% colnames(projections)) {
       projections[, pdIdx] <- pd[, pdIdx]

@@ -933,14 +933,15 @@ pHeatMapModule <- function(input, output, session,
     heatmapData$fontsize <- 14
     # heatmapData$fontsize_row = 18
     # heatmapData$filename=NULL
-    if ( nrow(heatmapData$mat) > 100 ) {
+    maxRow = 5000
+    if ( nrow(heatmapData$mat) > maxRow ) {
       showNotification(
-        "more than 100 row in heatmap. This can be very slow to display. Only showing first 100 rows",
+        paste("more than ", maxRow, " row in heatmap. This can be very slow to display. Only showing first ", maxRow, " rows"),
         id = "pHeatMapPlotWARNING",
         type = "warning",
         duration = 20
       )
-      heatmapData$mat = heatmapData$mat[1:100,]
+      heatmapData$mat = heatmapData$mat[1:maxRow,]
     }
 
     system.time(do.call(TRONCO::pheatmap, heatmapData))
