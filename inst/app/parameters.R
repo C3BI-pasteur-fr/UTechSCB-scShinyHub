@@ -1,4 +1,27 @@
 
+# list of variables needed for reproducibility
+importantVariables <- list(
+  # cell selection (implicitly stored in scEx/scEx_log)
+  # gene selection (implicitly stored in scEx/scEx_log)
+  # manual projections (storted in projections) 
+  
+  # normalization
+  
+  # clustering
+  
+  # tSNE
+  
+  # UMAP
+  
+  # PCA
+  
+  # colors
+  
+  # comments
+)
+
+
+
 if (DEBUG) cat(file = stderr(), paste("parameters:", length(allTabs), " ", "\n"))
 
 normaliztionChoices <- list(rawNormalization = "rawNormalization")

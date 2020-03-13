@@ -36,7 +36,7 @@ packagePath <<- "inst/app"
 source(paste0(packagePath,  "/ui.R"))
 source(paste0(packagePath,  "/server.R"))
 
-app <- shinyApp(ui = scShinyUI, server = scShinyServer)
+app <- shinyApp(ui = scShinyUI, server = scShinyServer, enableBookmarking = "server")
 options(shiny.reactlog=TRUE)
 runApp(app)
 
