@@ -1006,6 +1006,11 @@ observe(label = "ob_clusterParams", {
     ))
   }
 })
+ 
+output$inputDirectoryHistory <- renderText({
+  # browser()
+  inputHistoryDirectory$datapath
+})
 
 
 if (DEBUG) {

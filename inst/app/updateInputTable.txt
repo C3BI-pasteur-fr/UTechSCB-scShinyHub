@@ -1,0 +1,51 @@
+varName	updateFunctionName	valueName
+# data input page ----
+# not this one as we are loading from it:
+#inputFileTab	updateTabsetPanel	selected
+sampleInput	updateCheckboxInput	value
+subsampleNum	updateNumericInput	value
+whichscLog	updateRadioButtons	selected
+beforeFilterRegEx	updateTextInput	value
+# gene selection tab ----
+selectIds	updateTextInput	value
+## shinyTree not being saved.
+minGenesGS	updateNumericInput	value
+genesKeep	updateTextInput	value
+## tableSelectionUi gsSelectedGenesMod
+## tableSelectionUi gsRMGenesMod
+# cellSelectionTab ----
+minExpGenes	updateTextInput	value
+minNonExpGenes	updateTextInput	value
+minGenes	updateNumericInput	value
+maxGenes	updateNumericInput	value
+cellPatternRM	updateTextInput	value
+cellKeep	updateTextInput	value
+cellKeepOnly	updateTextInput	value
+cellsFiltersOut	updateTextInput	value
+cellSelectionComment	updateTextInput	value
+## tableSelectionUi cellSelectionMod
+# pca parameters ----
+pcaRank	updateNumericInput	value
+pcaCenter	updateCheckboxInput	value
+pcaN	updateNumericInput	value
+pcaScale	updateCheckboxInput	value
+genes4PCA	updateTextInput	value
+# clustering ----
+tabsetCluster	updateTabsetPanel	selected
+# scranCluster ----
+clusterSource	updateSelectInput	selected
+clusterMethod	updateSelectInput	selected
+minClusterSize	updateNumericInput	value
+useRanks	updateSelectInput	selected
+geneSelectionClustering	updateTextInput	value
+# Seurat clustering ----
+seurClustDims	updateNumericInput	value
+seurClustk.param	updateNumericInput	value
+seurClustresolution	updateNumericInput	value
+## comments ----
+# don't want to try it seems too risquey
+## colors ----
+# sampleColorSelection
+# uiOutput("clusterColorSelection")
+# renameTab ----
+# doesn't make sense

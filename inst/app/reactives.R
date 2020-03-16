@@ -573,7 +573,7 @@ appendAnnotation <- function(scEx, annFile) {
   for (fpIdx in 1:length(annFile$datapath)) {
     data <- read.table(file = annFile$datapath[fpIdx], check.names = FALSE, header = TRUE, sep = ",", stringsAsFactors = FALSE)
     # if (.schnappsEnv$DEBUGSAVE) {
-      save(file = "~/SCHNAPPsDebug/appendAnnotation.RData", list = c(ls()))
+    save(file = "~/SCHNAPPsDebug/appendAnnotation.RData", list = c(ls()))
     # }
     # load(file = "~/SCHNAPPsDebug/appendAnnotation.RData")
     if (colnames(data)[1] %in% c("", "rownames", "ROWNAMES")) {
@@ -675,10 +675,37 @@ inputData <- reactive({
     showNotification("inputData", id = "inputData", duration = NULL)
   }
   
-  inFile <- input$file1
-  annFile <- input$annoFile
-  sampleCells <- input$sampleInput
-  subsampleNum <- input$subsampleNum
+  doCalc <- input$updateInputParameters
+  
+  inFile <- isolate(input$file1)
+  annFile <- isolate(input$annoFile)
+  sampleCells <- isolate(input$sampleInput)
+  subsampleNum <- isolate(input$subsampleNum)
+  histDir <- isolate(histDirectory()) # directory if we are loading a history
+  inputFpTab <- isolate(input$inputFileTab)
+  inVarFile <- isolate(input$InputSelectSource)
+  
+  ## deal with history input
+  # check if history should be read
+  if (inputFpTab == "load_history"){
+    if (.schnappsEnv$DEBUGSAVE) {
+      save(file = "~/SCHNAPPsDebug/inputData.RData", list = c(ls()))
+    }
+    # load(file='~/SCHNAPPsDebug/inputData.RData')
+    # 
+    if ( !file.exists(histDir) ) {
+      return (NULL)
+    }
+    cp = load(inVarFile)
+    # very old versions didn't contain "inputList"
+    if (!all("inputList" %in% cp)) {
+      showNotification("input data is missing", id = "inputData", )
+      return(NULL)
+    }
+    updateAllInputs(session, inputList, .schnappsEnv$updateInputTable)
+    return(NULL)
+  }
+  
   
   if (is.null(inFile)) {
     if (DEBUG) {
@@ -3046,6 +3073,92 @@ consolidateScEx <-
   }
 
 
+
+# function to update input values
+# compare new value to old value and change only if necessary.
+# parameters
+# name of input variable (need a list of modules as they are composite values)
+# value 
+# updateFunction function to use to update value
+## what about file1 input I don't think this can be changed.
+
+updateInput <- function(inputName, newValue, updateFunc) {
+  browser()
+}
+
+# returns the history directory if chosen, otherwise NULL
+# I copied the complexity from a simple example, but don't fully understand 
+# why we need the reactive histDir and such. (#TODO)
+
+inputHistoryDirectory <- reactiveValues(datapath = getwd())
+
+histDir <- reactive(input$histDir)
+
+observeEvent(ignoreNULL = TRUE,
+             eventExpr = {
+               input$histDir
+             },
+             handlerExpr = {
+               if (!"path" %in% names(histDir())) return()
+               home <- normalizePath(paste(.schnappsEnv$historyPath, "..", sep  = .Platform$file.sep))
+               inputHistoryDirectory$datapath <-
+                 file.path(home, paste(unlist(histDir()$path[-1]), collapse = .Platform$file.sep))
+               rdataFiles = dir(path = inputHistoryDirectory$datapath, pattern = "*.RData", full.names = T)
+               rdataFiles = rdataFiles[-grep("scEx", rdataFiles)]
+               # finfo = ldply(rdataFiles, file.info)
+               # colnames(finfo)
+               updateSelectInput(session = session, inputId = "InputSelectSource",
+                                 choices = rdataFiles)
+               
+               # browser()
+               
+             }
+)
+
+histDirectory <- reactive({
+  # cat(file = stderr(), "\nhistDirectory\n\n")
+  roots = c(home = paste(.schnappsEnv$historyPath, "..", sep = .Platform$file.sep))
+  histPath = parseDirPath(roots, selection = input$histDir)
+  filesWithInput = c()
+  
+  return(histPath)
+})
+
+
+# updateAllInputs ----
+# updates input values based on a list of Inputs (inputList), for variables in updateInputTable
+# updateInputTable has two columns: varName and updateFunctionName that define how to update a given variable.
+# only variables that are different will be updated.
+updateAllInputs <- function(session, inputList, updateInputTable) {
+  cat(file = stderr(), "\n starting update Allinputs")
+  # browser()
+  for (idx in 1:nrow(updateInputTable)) {
+    varname = updateInputTable[idx, "varName"]
+    if (varname %in% names(inputList) & varname %in% names(input)) {
+      functionName = updateInputTable[idx, "updateFunctionName"]
+      if (inherits(get(functionName), "function")) {
+        if (inputList[[varname]] != input[[varname]]) {
+          valueName = updateInputTable[idx, "valueName"]
+          if (valueName == "value") {
+            # browser()
+            # cat(file = stderr(), paste(functionName, list(session = session, inputId = varname, value = inputList[[varname]])))
+            do.call(get(functionName), list(session = session, inputId = varname, value = inputList[[varname]]))
+          }
+          if (valueName == "selected") {
+            # browser()
+            # cat(file = stderr(), paste(functionName, list(session = session, inputId = varname, value = inputList[[varname]])))
+            do.call(get(functionName), list(session = session, inputId = varname, selected = inputList[[varname]]))
+          }
+        }
+      }
+    }
+  }
+  return(NULL)
+}
+
 if (DEBUG) {
   cat(file = stderr(), "\n\ndone loading reactives.R.\n\n\n")
 }
+
+
+

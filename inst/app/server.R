@@ -23,6 +23,7 @@ suppressMessages(require(colourpicker))
 # suppressMessages(require(shinytest))
 suppressMessages(require(scran))
 suppressMessages(require(BiocSingular))
+suppressMessages(require(shinyFiles))
 
 if ("debugme" %in% rownames(installed.packages())) {
   suppressMessages(require(debugme))
@@ -141,7 +142,7 @@ scShinyServer <- shinyServer(function(input, output, session) {
   
   base::options(shiny.maxRequestSize = 2000 * 1024^2)
   
-  ### history setup
+  ### history setup ----
   if (exists("historyPath", envir = .schnappsEnv)) {
     if (!is.null(x = .schnappsEnv$historyPath)) {
       .schnappsEnv$historyPath = paste0(.schnappsEnv$historyPath, "/hist_",format(Sys.time(), "%Y-%b-%d.%H.%M"))
@@ -202,6 +203,25 @@ scShinyServer <- shinyServer(function(input, output, session) {
     }
     }
   
+  # used for loading from history directory ----
+  # might go into reactives.R
+  # TODO need to check what happens if historyPath is not available
+
+  shinyDirChoose(
+    input,
+    'histDir',
+    roots = c(home = paste(.schnappsEnv$historyPath, "..", sep = .Platform$file.sep))
+    # ,
+    # filetypes = c('', 'txt', 'bigWig', "tsv", "csv", "bw")
+  )
+  
+  # updateInputTable ----
+  .schnappsEnv$updateInputTable = read.table(file = paste0(packagePath,"/updateInputTable.txt"), header = T, sep = "\t", 
+                                             stringsAsFactors = F, skipNul =T)
+  # .schnappsEnv$updateInputTable = data.frame(varName = c("sampleInput", "subsampleNum"),
+  #                                            updateFunctionName = c("updateCheckboxInput", "updateNumericInput"), 
+  #                                            valueName = c("value", "value"),
+  #                                            stringsAsFactors = FALSE)
   
   # TODO check if file exists
   # TODO as parameter to load user specified information
@@ -271,6 +291,7 @@ scShinyServer <- shinyServer(function(input, output, session) {
     base::source(fp, local = TRUE)
     
     # heavyCalculations <- append2list(myHeavyCalculations, heavyCalculations)
+    # TODO read table for restore from history
     projectionFunctions <- append2list(myProjections, projectionFunctions)
     diffExpFunctions <- append2list(myDiffExpFunctions, diffExpFunctions)
   }
