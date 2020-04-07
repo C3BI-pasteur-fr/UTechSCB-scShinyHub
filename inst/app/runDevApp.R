@@ -6,7 +6,7 @@ library(reactlog)
   .schnappsEnv <- new.env(parent=emptyenv())
 # }
 
-  localContributionDir = "~/Rstudio/scShinyHub-github/bjContributions/"
+  localContributionDir = "~/Rstudio2/scShinyHub-github/bjContributions/"
   # localContributionDir = ""
   defaultValueSingleGene = "itgae" # CD52
   defaultValueMultiGenes = "CD52, S100A9, S100A4" # itgae, cd69, itga1" # CD52, S100A9, S100A4
@@ -36,8 +36,10 @@ packagePath <<- "inst/app"
 source(paste0(packagePath,  "/ui.R"))
 source(paste0(packagePath,  "/server.R"))
 
+
+reactlogReset()
 app <- shinyApp(ui = scShinyUI, server = scShinyServer, enableBookmarking = "server")
-options(shiny.reactlog=TRUE)
+options(shiny.reactlog=T)
 runApp(app)
 
 # schnapps(

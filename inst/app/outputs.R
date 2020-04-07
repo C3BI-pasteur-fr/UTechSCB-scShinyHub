@@ -879,8 +879,8 @@ observeEvent(
   eventExpr = input$delPrjsButton,
   handlerExpr = {
     if (DEBUG) cat(file = stderr(), "updatePrjsButton\n")
-    newPrjs <- projectionsTable$newProjections
-    delPrj <- input$delPrj
+    newPrjs <- isolate(projectionsTable$newProjections)
+    delPrj <- isolate(input$delPrj)
     if (is.null(projections)) {
       return(NULL)
     }

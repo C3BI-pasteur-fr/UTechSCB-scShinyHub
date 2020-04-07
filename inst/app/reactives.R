@@ -689,21 +689,36 @@ inputData <- reactive({
   # check if history should be read
   if (inputFpTab == "load_history"){
     if (.schnappsEnv$DEBUGSAVE) {
-      save(file = "~/SCHNAPPsDebug/inputData.RData", list = c(ls()))
+      save(file = "~/SCHNAPPsDebug/inputDataHist.RData", list = c(ls()))
     }
-    # load(file='~/SCHNAPPsDebug/inputData.RData')
+    # load(file='~/SCHNAPPsDebug/inputDataHist.RData')
     # 
     if ( !file.exists(histDir) ) {
       return (NULL)
     }
+    # TODO add .schnappsEnv
+    # browser()
     cp = load(inVarFile)
     # very old versions didn't contain "inputList"
     if (!all("inputList" %in% cp)) {
       showNotification("input data is missing", id = "inputData", )
       return(NULL)
     }
-    updateAllInputs(session, inputList, .schnappsEnv$updateInputTable)
-    return(NULL)
+    if(".schnappsEnv" %in% cp){
+      assign(".schnappsEnv", envir = parent.env(environment()), value = .schnappsEnv)
+      assign(".schnappsEnv", envir = globalenv(), value = .schnappsEnv)
+    }
+    # first update the inputs, then read in the data. This should trigger the most important calculations 
+    updateAllInputs(isolate(session), inputList, .schnappsEnv$updateInputTable)
+    # get the oldest scEx.*.RData
+    details = file.info(list.files(path = histDir, pattern="scEx.*RData",full.names = T))
+    if(!"datapath" %in% colnames(inFile)) {
+      # browser()
+      inFile = data.frame(name = "scEx.RData", size = 99,type = "", datapath = "", stringsAsFactors = F)
+    }
+    inFile$datapath[1] = rownames(details[with(details, order(as.POSIXct(mtime),decreasing = F)), ][1,])
+    
+    # return(NULL)
   }
   
   
@@ -1487,7 +1502,7 @@ scEx <- reactive({
   if (!exists("dataTables") |
       is.null(dataTables) | is.null(useGenes) | is.null(useCells)) {
     if (DEBUG) {
-      cat(file = stderr(), "scEx: NULL\n")
+      cat(file = stderr(), "scEx: one of the inputs is NULL\n")
     }
     return(NULL)
   }
@@ -1559,16 +1574,18 @@ scEx_log <- reactive({
   
   scEx <- scEx()
   dataTables <- inputData()
+  # for the history restore functionality we have to un-isolate this.
   whichscLog <- input$whichscLog # from the input page
   # update if button is clicked is haneled in individual normalizations reactives/observers
   # update <- input$updateNormalization
   # don't update if parameters are changed
   normMethod <- isolate(input$normalizationRadioButton)
+  # normMethod <- (input$normalizationRadioButton)
   clicked <- input$updateNormalization
   
   if (is.null(scEx)) {
     if (DEBUG) {
-      cat(file = stderr(), "scEx_log:NULL\n")
+      cat(file = stderr(), "scEx_log: scEx is NULL\n")
     }
     return(NULL)
   }
@@ -1578,6 +1595,7 @@ scEx_log <- reactive({
   # load(file="~/SCHNAPPsDebug/scEx_log.RData")
   
   if (whichscLog == "disablescEx_log") {
+    cat(file = stderr(), paste("scEx_log: disablescEx_log",isolate(input$whichscLog),"\n"))
     return(NULL)
   }
   
@@ -1587,6 +1605,7 @@ scEx_log <- reactive({
     scEx_log <- do.call(normMethod, args = list())
   }
   if (is.null(scEx_log)) {
+    cat(file = stderr(), "scEx_log: problem with normalization\n")
     # problem with normalization
     return(NULL)
   }
@@ -1597,6 +1616,7 @@ scEx_log <- reactive({
   exportTestValues(scEx_log = {
     assays(scEx_log)["logcounts"]
   })
+  
   return(scEx_log)
 })
 
@@ -1833,7 +1853,7 @@ pca <- reactive({
   
   if (is.null(scEx_log)) {
     if (DEBUG) {
-      cat(file = stderr(), "pca:NULL\n")
+      cat(file = stderr(), "pca: scEx_log NULL\n")
     }
     return(NULL)
   }
@@ -2746,7 +2766,7 @@ reacativeReport <- function() {
   scEx <- scEx()
   projections <- projections()
   scEx_log <- scEx_log()
-  inputNames <- names(input)
+  inputNames <- isolate(names(input))
   # browser()
   
   if (is.null(scEx)) {
@@ -3092,17 +3112,17 @@ updateInput <- function(inputName, newValue, updateFunc) {
 
 inputHistoryDirectory <- reactiveValues(datapath = getwd())
 
-histDir <- reactive(input$histDir)
+# histDir <- reactive(input$histDir)
 
 observeEvent(ignoreNULL = TRUE,
              eventExpr = {
                input$histDir
              },
              handlerExpr = {
-               if (!"path" %in% names(histDir())) return()
+               if (!"path" %in% names(input$histDir)) return()
                home <- normalizePath(paste(.schnappsEnv$historyPath, "..", sep  = .Platform$file.sep))
                inputHistoryDirectory$datapath <-
-                 file.path(home, paste(unlist(histDir()$path[-1]), collapse = .Platform$file.sep))
+                 file.path(home, paste(unlist(input$histDir$path[-1]), collapse = .Platform$file.sep))
                rdataFiles = dir(path = inputHistoryDirectory$datapath, pattern = "*.RData", full.names = T)
                rdataFiles = rdataFiles[-grep("scEx", rdataFiles)]
                # finfo = ldply(rdataFiles, file.info)
@@ -3134,24 +3154,48 @@ updateAllInputs <- function(session, inputList, updateInputTable) {
   # browser()
   for (idx in 1:nrow(updateInputTable)) {
     varname = updateInputTable[idx, "varName"]
-    if (varname %in% names(inputList) & varname %in% names(input)) {
-      functionName = updateInputTable[idx, "updateFunctionName"]
-      if (inherits(get(functionName), "function")) {
-        if (inputList[[varname]] != input[[varname]]) {
-          valueName = updateInputTable[idx, "valueName"]
-          if (valueName == "value") {
-            # browser()
-            # cat(file = stderr(), paste(functionName, list(session = session, inputId = varname, value = inputList[[varname]])))
-            do.call(get(functionName), list(session = session, inputId = varname, value = inputList[[varname]]))
-          }
-          if (valueName == "selected") {
-            # browser()
-            # cat(file = stderr(), paste(functionName, list(session = session, inputId = varname, value = inputList[[varname]])))
-            do.call(get(functionName), list(session = session, inputId = varname, selected = inputList[[varname]]))
+    functionName = updateInputTable[idx, "updateFunctionName"]
+    valueName = updateInputTable[idx, "valueName"]
+    nInputList = isolate(names(inputList))
+    nInput = isolate(names(input))
+    isolate(
+    for(vname in nInputList[grep(varname, nInputList)]){
+      if (vname %in% nInput) {
+        cat(file = stderr(), paste(vname, input[[vname]],inputList[[vname]], "\n"))
+        if (inherits(get(functionName), "function")) {
+          if (inputList[[vname]] != isolate(input[[vname]])) {
+            
+            if (valueName == "value") {
+              if(vname == "coE_selected-dimension_x") {
+                # browser()
+              }
+              # 
+              cat(file = stderr(), paste(functionName, list(session = session, inputId = vname, value = inputList[[vname]]),"\n"))
+              do.call(get(functionName), list(session = session, inputId = vname, value = inputList[[vname]]))
+              # cat(file = stderr(), paste(vname, input[[vname]], "\n"))
+              # cat(file = stderr(), paste("coE_selected-dimension_x: ", input$"coE_selected-dimension_x", "\n"))
+            }
+            if (valueName == "selected") {
+              # cat(file = stderr(), paste(vname ,"\n"))
+              # if(vname == "coE_selected-dimension_x") {
+              #   cat(file = stderr(), paste(functionName, list(session = session, inputId = vname, selected = inputList[[vname]]),"\n"))
+              #   updateSelectInput(session, inputId = "coE_selected-dimension_x", selected = "tsne2")
+              #   # browser()
+              #   cat(file = stderr(), paste(functionName, list(session = session, inputId = vname, selected = inputList[[vname]]),"\n"))
+              #   # cat(file = stderr(), paste(names(session$input),"\n", sep = ", "))
+              # }
+              # browser()
+              cat(file = stderr(), paste(functionName, list(session = session, inputId = vname, selected = inputList[[vname]]),"\n"))
+              do.call(get(functionName), list(session = session, inputId = vname, selected = inputList[[vname]]))
+              # cat(file = stderr(), paste("1:  coE_selected-dimension_x: ", input$"coE_selected-dimension_x", "\n"))
+              # cat(file = stderr(), paste("2:  coE_selected-dimension_x: ", .schnappsEnv$"coE_selected-dimension_x", "\n"))
+              # cat(file = stderr(), paste("3:  coE_selected-dimension_x: ", .schnappsEnv$"dimension_x", "\n"))
+            }
           }
         }
       }
     }
+    )
   }
   return(NULL)
 }

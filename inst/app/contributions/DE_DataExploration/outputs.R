@@ -730,7 +730,7 @@ observe(label = "ob12", {
 
   if (is.null(out)) {
     # set one parameter to something not possible to deactivate button/or choose different
-    .schnappsEnv$calculated_normalizationRadioButton <- "NA"
+    # .schnappsEnv$calculated_normalizationRadioButton <- "NA"
   }
   if (DEBUG) {
     cat(file = stderr(), paste(

@@ -27,7 +27,7 @@ clusterUI <- function(id) {
     fluidRow(
       column(
         width = 6,
-        textInput(ns("geneIds"), "comma separated list of genes for UmiCountPerGenes", value = "")
+        textInput(ns("geneIds"), "comma separated list of genes for UmiCountPerGenes")
       ),
       column(
         width = 6,
@@ -38,9 +38,12 @@ clusterUI <- function(id) {
       column(
         width = 4,
         selectInput(ns("dimension_x"),
-          label = "X",
-          choices = c("tsne1", "tsne2", "tsne3"),
-          selected = "tsne1"
+          label = "X"
+          ,
+          choices = c("tsne1", "tsne2", "tsne3")
+          
+          # ,
+          # selected = "tsne1"
         )
       ),
       column(

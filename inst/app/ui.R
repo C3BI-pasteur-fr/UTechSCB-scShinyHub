@@ -162,6 +162,10 @@ scShinyUI <- shinyUI(
       },
       if (DEBUG) {
         actionButton("openBrowser", "open Browser")
+      },
+      if (DEBUG) {
+        actionButton("setVal", "change value")
+        bookmarkButton()
       }
       # ,
       # verbatimTextOutput("save2Historystring")

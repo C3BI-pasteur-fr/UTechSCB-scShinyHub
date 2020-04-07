@@ -58,45 +58,67 @@ clusterServer <- function(input, output, session,
   # })
 
   observe({
+    # browser()
     if (DEBUG) cat(file = stderr(), paste0("observe: dimension_x\n"))
-    .schnappsEnv$dim1 <- input$dimension_x
+    assign(ns("dimension_x"), envir = globalenv()$.schnappsEnv, value = input$dimension_x)
+    # globalenv()$.schnappsEnv[[]] <- input$dimension_x
+    cat(file = stderr(), paste("==1==coE_selected-dimension_x: ", input$"dimension_x", "\n"))
+    
   })
   observe(label = "ob32", {
     if (DEBUG) cat(file = stderr(), paste0("observe: dimension_y\n"))
-    .schnappsEnv$dim2 <- input$dimension_y
+    assign(ns("dimension_y"), envir = globalenv()$.schnappsEnv, value = input$dimension_y)
+    # globalenv()$.schnappsEnv[[ns("dimension_y")]] <- input$dimension_y
+    # .schnappsEnv$dim2 <- input$dimension_y
   })
   observe(label = "ob33", {
     if (DEBUG) cat(file = stderr(), paste0("observe: dimension_col\n"))
-    .schnappsEnv$dimCol <- input$dimension_col
+    assign(ns("dimension_col"), envir = globalenv()$.schnappsEnv, value = input$dimension_col)
+    # globalenv()$.schnappsEnv[[ns("dimension_col")]] <- input$dimension_col
+      # .schnappsEnv$dimCol <- input$dimension_col
   })
   observe(label = "ob34", {
     if (DEBUG) cat(file = stderr(), paste0("observe: divideXBy\n"))
-    .schnappsEnv$divXBy <- input$divideXBy
+    assign(ns("divideXBy"), envir = globalenv()$.schnappsEnv, value = input$divideXBy)
+    # globalenv()$.schnappsEnv[[ns("divideXBy")]] <- input$divideXBy
+      # .schnappsEnv$divXBy <- input$divideXBy
   })
   observe(label = "ob35", {
     if (DEBUG) cat(file = stderr(), paste0("observe: divideYBy\n"))
-    .schnappsEnv$divYBy <- input$divideYBy
+    assign(ns("divideYBy"), envir = globalenv()$.schnappsEnv, value = input$divideYBy)
+    # globalenv()$.schnappsEnv[[ns("divideYBy")]] <- input$divideYBy
+      # .schnappsEnv$divYBy <- input$divideYBy
   })
   observe(label = "ob36", {
     if (DEBUG) cat(file = stderr(), paste0("observe: logX\n"))
-    .schnappsEnv$logX <- input$logX
+    assign(ns("logX"), envir = globalenv()$.schnappsEnv, value = input$logX)
+    # globalenv()$.schnappsEnv[[ns("logX")]] <- input$logX
+      # .schnappsEnv$logX <- input$logX
   })
   observe(label = "ob37", {
     if (DEBUG) cat(file = stderr(), paste0("observe: logY\n"))
-    .schnappsEnv$logY <- input$logY
+    assign(ns("logY"), envir = globalenv()$.schnappsEnv, value = input$logY)
+    # globalenv()$.schnappsEnv[[ns("logY")]] <- input$logY
+      # .schnappsEnv$logY <- input$logY
   })
   observe(label = "ob38", {
     if (DEBUG) cat(file = stderr(), paste0("observe: showCells\n"))
-    .schnappsEnv$showCells <- input$showCells
+    assign(ns("showCells"), envir = globalenv()$.schnappsEnv, value = input$showCells)
+    # globalenv()$.schnappsEnv[[ns("showCells")]] <- input$showCells
+      # .schnappsEnv$showCells <- input$showCells
   })
   # clusterServer - observe input$addToGroup ----
   observe(label = "ob39", {
     if (DEBUG) cat(file = stderr(), "observe input$addToGroup \n")
     if (!is.null(input$addToGroup)) {
       if (input$addToGroup) {
-        .schnappsEnv$addToGroupValue <- TRUE
+        assign(ns("addToGroupValue"), envir = globalenv()$.schnappsEnv, value = TRUE)
+        # globalenv()$.schnappsEnv[[ns("addToGroupValue")]] <- TRUE
+          # .schnappsEnv$addToGroupValue <- TRUE
       } else {
-        .schnappsEnv$addToGroupValue <- FALSE
+        assign(ns("addToGroupValue"), envir = globalenv()$.schnappsEnv, value = FALSE)
+        # globalenv()$.schnappsEnv[[ns("addToGroupValue")]] <- FALSE
+          # .schnappsEnv$addToGroupValue <- FALSE
       }
     }
   })
@@ -143,11 +165,15 @@ clusterServer <- function(input, output, session,
       comment = paste(myns)
     )
   })
+  
+  # debounced projections ----
+  projections_d <- projections %>% debounce(1000)
+  
   # clusterServer - updateInput ----
   # updateInput <-
   observe(label = "ob41", {
     if (DEBUG) cat(file = stderr(), paste0("updateInput\n"))
-    projections <- projections()
+    projections <- projections_d()
 
     # Can use character(0) to remove all choices
     if (is.null(projections)) {
@@ -163,36 +189,92 @@ clusterServer <- function(input, output, session,
     # )
     updateSelectInput(session, "dimension_x",
       choices = c(colnames(projections), "UmiCountPerGenes", "UmiCountPerGenes2"),
-      selected = .schnappsEnv$dim1
+      selected = globalenv()$.schnappsEnv[[ns("dimension_x")]]
+      
     )
+    cat(file = stderr(), paste("==2==coE_selected-dimension_x: ", input$"dimension_x", globalenv()$.schnappsEnv[[ns("dimension_x")]],"\n"))
     updateSelectInput(session, "dimension_y",
       choices = c(colnames(projections), "histogram", "UmiCountPerGenes", "UmiCountPerGenes2"),
-      selected = .schnappsEnv$dim2
+      selected = globalenv()$.schnappsEnv[[ns("dimension_y")]]
+      # selected = .schnappsEnv$dim2
     )
     updateSelectInput(session, "dimension_col",
       choices = c(colnames(projections), "cellDensity", "UmiCountPerGenes", "UmiCountPerGenes2"),
-      selected = .schnappsEnv$dimCol
+      selected = globalenv()$.schnappsEnv[[ns("dimension_col")]]
+      # selected = .schnappsEnv$dimCol
     )
 
     updateSelectInput(session, "divideXBy",
       choices = c("None", colnames(projections), "UmiCountPerGenes", "UmiCountPerGenes2"),
-      selected = .schnappsEnv$divXBy
+      selected = globalenv()$.schnappsEnv[[ns("divideXBy")]]
+      # selected = .schnappsEnv$divXBy
     )
     updateSelectInput(session, "divideYBy",
       choices = c("None", colnames(projections), "UmiCountPerGenes", "UmiCountPerGenes2"),
-      selected = .schnappsEnv$divYBy
+      selected = globalenv()$.schnappsEnv[[ns("divideYBy")]]
+      # selected = .schnappsEnv$divYBy
     )
     updateCheckboxInput(session, "logX",
-      value = .schnappsEnv$logX
+                        value = globalenv()$.schnappsEnv[[ns("logX")]]
+                        # value = .schnappsEnv$logX
     )
     updateCheckboxInput(session, "logY",
-      value = .schnappsEnv$logY
+                        value = globalenv()$.schnappsEnv[[ns("logY")]]
+                        # value = .schnappsEnv$logY
     )
     updateCheckboxInput(session, "showCells",
-      value = .schnappsEnv$showCells
+                        value = globalenv()$.schnappsEnv[[ns("showCells")]]
+                        # value = .schnappsEnv$showCells
     )
   })
 
+  # input variables ----
+  inputVarClusterServer <- reactive({
+    start.time <- base::Sys.time()
+    if (DEBUG) cat(file = stderr(), "cluster: inputVarClusterServer\n")
+    on.exit(
+      if (!is.null(getDefaultReactiveDomain())) {
+        removeNotification(id = "inputVarClusterServer")
+      }
+    )
+    # show in the app that this is running
+    if (!is.null(getDefaultReactiveDomain())) {
+      showNotification("inputVarClusterServer", id = "inputVarClusterServer", duration = NULL)
+    }
+    # browser()
+    cat(file = stderr(), paste("==3==coE_selected-dimension_x: ", input$"dimension_x", globalenv()$.schnappsEnv[[ns("dimension_x")]], "\n"))
+    
+    retVal <- list(
+      dimension_x = input$dimension_x,
+      dimension_y = input$dimension_y,
+      dimension_col = input$dimension_col,
+      logx = input$logX,
+      logy = input$logY,
+      divXBy = input$divideXBy,
+      divYBy = input$divideYBy,
+      geneIds = input$geneIds,
+      geneIds2 = input$geneIds2,
+      groupNames = input$groupNames,
+      groupName = input$groupName,
+      grpN = make.names(input$groupName, unique = TRUE),
+      grpNs = groupNames$namesDF,
+      showCells = input$showCells
+    )
+    
+    if (.schnappsEnv$DEBUGSAVE) {
+      if (DEBUG) cat(file = stderr(), "cluster: inputVarClusterServer: saving\n")
+      options(digits.secs=6) 
+      save(file = paste0("~/SCHNAPPsDebug/inputVarClusterServer.",as.double(Sys.time()),".RData"), list = c(ls()))
+    }
+    # load(file="~/SCHNAPPsDebug/selectedCellNames.RData")
+    
+    printTimeEnd(start.time, "inputVarClusterServer")
+    cat(file = stderr(), paste( names(retVal), retVal, collapse = "\n"))
+    return(retVal)
+  })
+  
+  inputVarClusterServer_d <- inputVarClusterServer %>% debounce(1000)
+  
   # clusterServer - selectedCellNames ----
   selectedCellNames <- reactive({
     start.time <- base::Sys.time()
@@ -207,18 +289,18 @@ clusterServer <- function(input, output, session,
       showNotification("selectedCellNames", id = "selectedCellNames", duration = NULL)
     }
     # browser()
-    projections <- projections()
+    projections <- projections_d()
     req(projections)
     brushedPs <- plotly::event_data("plotly_selected", source = "subset")
-    dimY <- input$dimension_y
-    dimX <- input$dimension_x
-    geneNames <- input$geneIds
-    geneNames2 <- input$geneIds2
+    dimY <- inputVarClusterServer_d()$dimension_y
+    dimX <- inputVarClusterServer_d()$dimension_x
+    geneNames <- inputVarClusterServer_d()$geneIds
+    geneNames2 <- inputVarClusterServer_d()$geneIds2
     scEx_log <- scEx_log()
     scEx <- scEx()
-    namedGroup <- input$groupNames
-    grpN <- make.names(input$groupName, unique = TRUE)
-    grpNs <- groupNames$namesDF
+    namedGroup <- inputVarClusterServer_d()$groupNames
+    grpN <- inputVarClusterServer_d()$grpN
+    grpNs <- inputVarClusterServer_d()$grpNs
 
     if (is.null(projections) | is.null(brushedPs)) {
       if (DEBUG) cat(file = stderr(), "cluster: selectedCellNames: brush null\n")
@@ -276,7 +358,7 @@ clusterServer <- function(input, output, session,
       cells.names
     })
     return(cells.names)
-  })
+  }) %>% debounce(1000) # selectedCellNames
 
   # clusterServer - returnValues ----
   returnValues <- reactiveValues(
@@ -291,19 +373,19 @@ clusterServer <- function(input, output, session,
         if (DEBUG) cat(file = stderr(), paste("selectedCellNames is null\n"))
         retVal <- NULL
       }
-      grpN <- make.names(input$groupName, unique = TRUE)
-      grpSelected <- make.names(input$groupNames, unique = TRUE)
-      grpNs <- groupNames$namesDF
+      grpN <- inputVarClusterServer_d()$grpN
+      grpSelected <- make.names(inputVarClusterServer_d()$groupNames, unique = TRUE)
+      grpNs <- inputVarClusterServer_d()$grpNs
       if (length(grpN) == 0 | length(grpNs) == 0) {
         if (DEBUG) cat(file = stderr(), "reactiveValues: grpN empty\n")
         return(retVal)
       }
       # inpClusters <- input$clusters
-      projections <- projections()
-      dimY <- input$dimension_y
-      dimX <- input$dimension_x
-      geneNames <- input$geneIds
-      geneNames2 <- input$geneIds2
+      projections <- projections_d()
+      dimY <- inputVarClusterServer_d()$dimension_y
+      dimX <- inputVarClusterServer_d()$dimension_x
+      geneNames <- inputVarClusterServer_d()$geneIds
+      geneNames2 <- inputVarClusterServer_d()$geneIds2
       scEx_log <- scEx_log()
       scEx <- scEx()
 
@@ -351,7 +433,7 @@ clusterServer <- function(input, output, session,
       }
       return(retVal)
     })
-  )
+  )  # returnValues
 
   # if (DEBUG) {
   #   cat(file = stderr(), paste("clusterServers", session$ns("clusters"), "\n"))
@@ -401,23 +483,24 @@ clusterServer <- function(input, output, session,
     scEx_log <- scEx_log()
     scEx <- scEx()
     tdata <- tData()
-    projections <- projections()
-    grpNs <- groupNames$namesDF
-    grpN <- make.names(input$groupName, unique = TRUE)
+    projections <- projections_d()
+    grpNs <- inputVarClusterServer_d()$grpNs
+    grpN <- inputVarClusterServer_d()$grpN
 
     # returnValues$cluster <- input$clusters
-    dimY <- input$dimension_y
-    dimX <- input$dimension_x
-    dimCol <- input$dimension_col
+    dimY <- inputVarClusterServer_d()$dimension_y
+    dimX <- inputVarClusterServer_d()$dimension_x
+    dimCol <- inputVarClusterServer_d()$dimension_col
     g_id <- gene_id()
-    geneNames <- input$geneIds
-    geneNames2 <- input$geneIds2
-    logx <- input$logX
-    logy <- input$logY
-    divXBy <- input$divideXBy
-    divYBy <- input$divideYBy
+    geneNames <- inputVarClusterServer_d()$geneIds
+    geneNames2 <- inputVarClusterServer_d()$geneIds2
+    logx <- inputVarClusterServer_d()$logx
+    logy <- inputVarClusterServer_d()$logy
+    divXBy <- inputVarClusterServer_d()$divXBy
+    divYBy <- inputVarClusterServer_d()$divYBy
     scols <- sampleCols$colPal
     ccols <- clusterCols$colPal
+    # browser()
     # moreOptions <- input$moreOptions
     myns <- session$ns("-")
     save2History <- .schnappsEnv$saveHistorycheckbox
@@ -439,8 +522,10 @@ clusterServer <- function(input, output, session,
     featureData <- rowData(scEx_log)
     if (.schnappsEnv$DEBUGSAVE) {
       cat(file = stderr(), paste("cluster plot saving\n"))
+      options(digits.secs=6) 
+      save(file = paste0("~/SCHNAPPsDebug/inputVarClusterServer.",as.double(Sys.time()),".RData"), list = c(ls()))
       save(
-        file = paste0("~/SCHNAPPsDebug/clusterPlot-", ns("-"), ".RData", collapse = "."),
+        file = paste0("~/SCHNAPPsDebug/clusterPlot-",ns(as.double(Sys.time())), ".RData", collapse = "."),
         list = c(ls(), "legend.position")
       )
       cat(file = stderr(), paste("cluster plot saving done\n"))
@@ -510,7 +595,7 @@ clusterServer <- function(input, output, session,
       showNotification("visibleCellNames", id = "visibleCellNames", duration = NULL)
     }
 
-    projections <- projections()
+    projections <- projections_d()
     if (is.null(projections)) {
       return(NULL)
     }
@@ -523,7 +608,7 @@ clusterServer <- function(input, output, session,
       subsetData
     })
     return(subsetData)
-  })
+  })  # visibleCellNames
 
 
   # clusterServer - observe input$changeGroups ----
@@ -542,28 +627,30 @@ clusterServer <- function(input, output, session,
 
     ns <- session$ns
     input$changeGroups # action button
-    addToSelection <- .schnappsEnv$addToGroupValue
+    addToSelection <- .schnappsEnv[[ns("addToGroupValue")]]
+    # addToSelection <- .schnappsEnv$addToGroupValue
 
     # we isolate here because we only want to change if the button is clicked.
     # TODO what happens if new file is loaded??? => problem!
+    prjs <- isolate(sessionProjections$prjs)
     isolate({
       # we should react on a changed filename, but that would imply calculating pca's etc directly after loading
       scEx <- scEx()
-      prjs <- sessionProjections$prjs
+      
       # brushedPs <- plotly::event_data("plotly_selected", source = "subset")
       # scEx <- scEx()
       # inpClusters <- input$clusters
 
       # this used to be make.names(input$groupName) which created a column called "X"
-      grpN <- input$groupName
-      grpNs <- groupNames$namesDF
+      grpN <- inputVarClusterServer_d()$groupName
+      grpNs <- inputVarClusterServer_d()$grpNs
       cells.names <- selectedCellNames()
       visibleCells <- visibleCellNames()
       if (nrow(grpNs) == 0) {
         initializeGroupNames()
       }
       if (ncol(grpNs) == 0) {
-        grpNs <- groupNames$namesDF
+        grpNs <- inputVarClusterServer_d()$grpNs
       }
       if (is.null(scEx)) {
         return(NULL)
@@ -637,10 +724,10 @@ clusterServer <- function(input, output, session,
       showNotification("nCellsVisibleSelected", id = "nCellsVisibleSelected", duration = NULL)
     }
 
-    grpN <- make.names(input$groupName, unique = TRUE)
-    grpNs <- groupNames$namesDF
+    grpN <- inputVarClusterServer_d()$grpN
+    grpNs <- inputVarClusterServer_d()$grpNs
     # inpClusters <- input$clusters
-    projections <- projections()
+    projections <- projections_d()
     if (is.null(projections)) {
       return(NULL)
     }
@@ -709,8 +796,8 @@ clusterServer <- function(input, output, session,
     ns <- session$ns
     # moreOptions <- input$moreOptions
     # groupNs <- groupNames$namesDF
-    grpNs <- groupNames$namesDF
-    projections <- projections()
+    grpNs <- inputVarClusterServer_d()$grpNs
+    projections <- projections_d()
     # if (!moreOptions) {
     #   if (DEBUG) cat(file = stderr(), "additionalOptions NULL\n")
     #   groupName <<- ""
@@ -757,19 +844,19 @@ clusterServer <- function(input, output, session,
 
     ns <- session$ns
     brushedPs <- suppressMessages(plotly::event_data("plotly_selected", source = "subset"))
-    projections <- projections()
+    projections <- projections_d()
     # inpClusters <- (input$clusters)
-    myshowCells <- (input$showCells)
-    geneNames <- input$geneIds
-    geneNames2 <- input$geneIds2
-    dimY <- input$dimension_y
-    dimX <- input$dimension_x
+    myshowCells <- (inputVarClusterServer_d()$showCells)
+    geneNames <- inputVarClusterServer_d()$geneIds
+    geneNames2 <- inputVarClusterServer_d()$geneIds2
+    dimY <- inputVarClusterServer_d()$dimension_y
+    dimX <- inputVarClusterServer_d()$dimension_x
     scEx_log <- scEx_log()
     # moreOptions <- input$moreOptions
     retVal <- selectedCellNames()
-    grpN <- make.names(input$groupName, unique = TRUE)
-    grpSelected <- make.names(input$groupNames, unique = TRUE)
-    grpNs <- groupNames$namesDF
+    grpN <-inputVarClusterServer_d()$grpN
+    grpSelected <- make.names(inputVarClusterServer_d()$groupNames, unique = TRUE)
+    grpNs <- inputVarClusterServer_d()$grpNs
     myns <- ns("cellSelection")
 
     if (!myshowCells) {
@@ -810,7 +897,8 @@ clusterServer <- function(input, output, session,
   # clusterServer - return ----
   return(reactive({
     returnValues
-  }))
+  })
+  )
 }
 
 
@@ -1360,7 +1448,7 @@ cellSelectionModule <- function(input, output, session) {
 
 
   # Mod_updateInputPPt if projections changed ====
-  observe({
+  observe(label = "Mod_updateInputPPt", {
     if (DEBUG) cat(file = stderr(), "Mod_updateInputPPt started.\n")
     start.time <- base::Sys.time()
     on.exit({
@@ -1399,7 +1487,7 @@ cellSelectionModule <- function(input, output, session) {
     )
   })
 
-  observeEvent(input$Mod_clusterPP, {
+  observeEvent(input$Mod_clusterPP, label = "Mod_clusterPP event", {
     projections <- projections()
 
     if (DEBUG) cat(file = stderr(), "observeEvent: input$Mod_clusterPP\n")
