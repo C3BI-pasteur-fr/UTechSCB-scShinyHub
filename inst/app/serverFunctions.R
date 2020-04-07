@@ -1066,7 +1066,7 @@ add2history <- function(type, comment = "", input = input, ...) {
     # browser()
     tfile <- tempfile(pattern = paste0(names(varnames[1]), "."), tmpdir = .schnappsEnv$historyPath, fileext = ".RData")
     assign(names(varnames[1]), arg[1])
-    save(file = tfile, list = c(names(varnames[1]), "inputList"))
+    save(file = tfile, list = c(names(varnames[1]), "inputList", ".schnappsEnv"))
     # the load is commented out because it is not used at the moment and only takes time to load
     line <- paste0(
       "```{R}\n#load ", names(varnames[1]), "\n#load(file = \"", basename(tfile),
@@ -1097,7 +1097,7 @@ add2history <- function(type, comment = "", input = input, ...) {
     tfile <- tempfile(pattern = paste0(names(varnames[1]), "."), tmpdir = .schnappsEnv$historyPath, fileext = ".RData")
     assign(names(varnames[1]), arg[[1]])
     # report.env <- getReactEnv(DEBUG = .schnappsEnv$DEBUG)
-    save(file = tfile, list = c(names(varnames[1]), "inputList"))
+    save(file = tfile, list = c(names(varnames[1]), "inputList", ".schnappsEnv"))
     
     line <- paste0(
       "```{R}\n#load ", names(varnames[1]), "\nload(file = \"", basename(tfile),"\")\n",
@@ -1111,7 +1111,7 @@ add2history <- function(type, comment = "", input = input, ...) {
     tfile <- tempfile(pattern = paste0(names(varnames[1]), "."), tmpdir = .schnappsEnv$historyPath, fileext = ".RData")
     assign(names(varnames[1]), arg[[1]])
     # report.env <- getReactEnv(DEBUG = .schnappsEnv$DEBUG)
-    save(file = tfile, list = c(names(varnames[1]), "inputList"))
+    save(file = tfile, list = c(names(varnames[1]), "inputList", ".schnappsEnv"))
     
     line <- paste0(
       "```{R}\n#load ", names(varnames[1]), "\nload(file = \"", basename(tfile),"\")\n",
@@ -1125,7 +1125,7 @@ add2history <- function(type, comment = "", input = input, ...) {
     tfile <- tempfile(pattern = paste0(names(varnames[1]), "."), tmpdir = .schnappsEnv$historyPath, fileext = ".RData")
     assign(names(varnames[1]), arg[[1]])
     # report.env <- getReactEnv(DEBUG = .schnappsEnv$DEBUG)
-    save(file = tfile, list = c(names(varnames[1]), "inputList"))
+    save(file = tfile, list = c(names(varnames[1]), "inputList", ".schnappsEnv"))
     
     line <- paste0(
       "```{R}\n#load ", names(varnames[1]), "\nload(file = \"", basename(tfile),"\")\n",
